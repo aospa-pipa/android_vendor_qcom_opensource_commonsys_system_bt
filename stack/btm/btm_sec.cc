@@ -6345,14 +6345,6 @@ static bool btm_sec_queue_encrypt_request(const RawAddress& bd_addr,
  ******************************************************************************/
 void btm_sec_set_peer_sec_caps(tACL_CONN* p_acl_cb,
                                tBTM_SEC_DEV_REC* p_dev_rec) {
-  // Drop the connection here if the remote attempts to downgrade from Secure
-  // Connections mode.
-  if (btm_sec_is_device_sc_downgrade(p_dev_rec->hci_handle,
-      p_dev_rec->remote_supports_secure_connections)) {
-    btm_sec_send_hci_disconnect(p_dev_rec, HCI_ERR_AUTH_FAILURE, p_dev_rec->hci_handle);
-    BTM_TRACE_WARNING("Remote attempted to downgrade from Secure Connections mode");
-    return;
-  }
 
   if ((btm_cb.security_mode == BTM_SEC_MODE_SP ||
        btm_cb.security_mode == BTM_SEC_MODE_SP_DEBUG ||
@@ -6369,6 +6361,15 @@ void btm_sec_set_peer_sec_caps(tACL_CONN* p_acl_cb,
   BTM_TRACE_API("%s: sm4: 0x%02x, rmt_support_for_secure_connections %d",
                 __func__, p_dev_rec->sm4,
                 p_dev_rec->remote_supports_secure_connections);
+
+  // Drop the connection here if the remote attempts to downgrade from Secure
+  // Connections mode.
+  if (btm_sec_is_device_sc_downgrade(p_dev_rec->hci_handle,
+      p_dev_rec->remote_supports_secure_connections)) {
+    btm_sec_send_hci_disconnect(p_dev_rec, HCI_ERR_AUTH_FAILURE, p_dev_rec->hci_handle);
+    BTM_TRACE_WARNING("Remote attempted to downgrade from Secure Connections mode");
+    return;
+  }
 
   if (p_dev_rec->remote_features_needed) {
     BTM_TRACE_EVENT(
